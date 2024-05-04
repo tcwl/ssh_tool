@@ -512,7 +512,7 @@ while true; do
 clear
 echo -e "    ${skyblue}当日运行：${yellow}${TODAY}次   ${skyblue}累计运行：${yellow}${TOTAL}次${re}"
 echo -e "\033[0;97m-----------------By'eooce-----------------\033[0m"
-echo -e "\033[0;97m脚本地址: https://github.com/eooce/ssh_tool\033[0m" 
+echo -e "\033[0;97m脚本地址: https://github.com/tcwl/ssh_tool\033[0m" 
 echo ""
 echo -e "${skyblue} ##  ## #####   ####       ######  ####   ####  ##      ${re}" 
 echo -e "${skyblue} ##  ## ##  ## ##            ##   ##  ## ##  ## ##      ${re}" 
@@ -4815,7 +4815,7 @@ EOF
 
                 case $sub_choice in
                     1)
-                        curl https://raw.githubusercontent.com/eooce/ssh_tool/main/check_cpu.sh -o check_cpu.sh && chmod +x check_cpu.sh && bash check_cpu.sh
+                        curl https://raw.githubusercontent.com/tcwl/ssh_tool/main/check_cpu.sh -o check_cpu.sh && chmod +x check_cpu.sh && bash check_cpu.sh
 
                         # 添加Cron任务
                         (crontab -l 2>/dev/null; echo "*/10 * * * * /bin/bash /root/check_cpu.sh >> /root/check_cpu.log 2>&1") | crontab -
@@ -4823,7 +4823,7 @@ EOF
                         break_end
                     ;;
                     2)
-                        curl https://raw.githubusercontent.com/eooce/ssh_tool/main/check_memory.sh -o check_memory.sh && chmod +x check_memory.sh && bash check_memory.sh
+                        curl https://raw.githubusercontent.com/tcwl/ssh_tool/main/check_memory.sh -o check_memory.sh && chmod +x check_memory.sh && bash check_memory.sh
 
                         # 添加Cron任务
                         (crontab -l 2>/dev/null; echo "*/10 * * * * /bin/bash /root/check_memory.sh >> /root/check_cpu.log 2>&1") | crontab -
@@ -4831,7 +4831,7 @@ EOF
                         break_end                         
                     ;;
                     3)
-                        curl https://raw.githubusercontent.com/eooce/ssh_tool/main/check_traffic.sh -o check_traffic.sh && chmod +x check_traffic.sh && bash check_traffic.sh
+                        curl https://raw.githubusercontent.com/tcwl/ssh_tool/main/check_traffic.sh -o check_traffic.sh && chmod +x check_traffic.sh && bash check_traffic.sh
 
                         # 添加Cron任务
                         (crontab -l 2>/dev/null; echo "*/10 * * * * /bin/bash /root/check_traffic.sh >> /root/check_traffic.log 2>&1") | crontab -
@@ -4839,7 +4839,7 @@ EOF
                         break_end                         
                     ;;
                     4)
-                        curl https://raw.githubusercontent.com/eooce/ssh_tool/main/check.sh -o check.sh && chmod +x check.sh && bash check.sh
+                        curl https://raw.githubusercontent.com/tcwl/ssh_tool/main/check.sh -o check.sh && chmod +x check.sh && bash check.sh
 
                         # 添加Cron任务
                         (crontab -l 2>/dev/null; echo "*/10 * * * * /bin/bash /root/check.sh >> /root/check.log 2>&1") | crontab -
@@ -5251,11 +5251,11 @@ EOF
                 # 提示输入哪吒密钥
                 read -p $'\033[1;35m请输入哪吒客户端密钥: \033[0m' nezha_key
                 [ -d "node" ] || mkdir -p "node" && cd "node"
-                curl -O https://raw.githubusercontent.com/eooce/ssh_tool/main/index.js && curl -O https://raw.githubusercontent.com/eooce/nodejs-argo/main/package.json && npm install && chmod +x index.js && PORT=$port NEZHA_SERVER=$nezha_server NEZHA_PORT=$nezha_port NEZHA_KEY=$nezha_key CFIP=na.ma CFPORT=8443 screen node index.js
+                curl -O https://raw.githubusercontent.com/tcwl/ssh_tool/main/index.js && curl -O https://raw.githubusercontent.com/eooce/nodejs-argo/main/package.json && npm install && chmod +x index.js && PORT=$port NEZHA_SERVER=$nezha_server NEZHA_PORT=$nezha_port NEZHA_KEY=$nezha_key CFIP=na.ma CFPORT=8443 screen node index.js
             
             else
 
-                curl -O https://raw.githubusercontent.com/eooce/ssh_tool/main/index.js && curl -O https://raw.githubusercontent.com/eooce/nodejs-argo/main/package.json && npm install && chmod +x index.js && PORT=$port CFIP=na.ma CFPORT=8443 screen node index.js
+                curl -O https://raw.githubusercontent.com/tcwl/ssh_tool/main/index.js && curl -O https://raw.githubusercontent.com/eooce/nodejs-argo/main/package.json && npm install && chmod +x index.js && PORT=$port CFIP=na.ma CFPORT=8443 screen node index.js
             fi
         ;;
         9)
@@ -6781,10 +6781,10 @@ EOF
 # 脚本更新
   00)
     cd ~
-    curl -sS -O https://raw.githubusercontent.com/eooce/ssh_tool/main/update_log.sh && chmod +x update_log.sh && ./update_log.sh
+    curl -sS -O https://raw.githubusercontent.com/tcwl/ssh_tool/main/update_log.sh && chmod +x update_log.sh && ./update_log.sh
     rm update_log.sh
     echo ""
-    curl -sS -O https://raw.githubusercontent.com/eooce/ssh_tool/main/ssh_tool.sh && chmod +x ssh_tool.sh
+    curl -sS -O https://raw.githubusercontent.com/tcwl/ssh_tool/main/ssh_tool.sh && chmod +x ssh_tool.sh
     echo -e "${green}脚本已更新到最新版本！${re}"
     break_end
     main_menu
