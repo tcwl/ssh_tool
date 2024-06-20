@@ -10,7 +10,7 @@ purple='\e[1;35m'
 skyblue='\e[1;96m'
 
 # 检查是否为root下运行
-[[ $EUID -ne 0 ]] && echo -e "${red}注意: 请在root用户下运行脚本${re}" && sleep 2 && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}注意: 请在root用户下运行脚本${re}" && sleep 1 && exit 1
 
 # 创建快捷指令
 add_alias() {
@@ -33,7 +33,7 @@ done
 # 获取当前服务器ipv4和ipv6
 ip_address() {
     ipv4_address=$(curl -s ipv4.ip.sb)
-    ipv6_address=$(curl -s --max-time 2 ipv6.ip.sb)
+    ipv6_address=$(curl -s --max-time 1 ipv6.ip.sb)
 }
 
 # 安装依赖包
@@ -92,12 +92,10 @@ install_nodejs(){
         if [ $? -eq 0 ]; then
             echo -e "${green}nodejs安装成功!${re}"
             sleep 2
-            break_end
         else
             echo -e "${red}nodejs安装失败，尝试再次安装...${re}"
             install nodejs npm
             sleep 2
-            break_end
         fi
     fi 
 }
@@ -979,9 +977,10 @@ case $choice in
   5)
     clear
     install wget
-    wget --no-check-certificate -O tcpx.sh https://raw.githubusercontent.com/ylx2016/Linux-NetSpeed/master/tcpx.sh
-    chmod +x tcpx.sh
-    ./tcpx.sh
+    wget --no-check-certificate -O tcpx.sh https://raw.githubusercontent.com/ylx2016/Linux-NetSpeed/master/tcpx.sh && chmod +x tcpx.sh && ./tcpx.sh
+    rm tcpx.sh
+    break_end
+    main_menu
     ;;
 
   6)
@@ -2335,7 +2334,7 @@ case $choice in
       echo "17. AdGuardHome去广告软件                18. onlyoffice在线办公OFFICE"
       echo "19. 雷池WAF防火墙面板                    20. portainer容器管理面板"
       echo "21. VScode网页版                         22. UptimeKuma监控工具"
-      echo "23. Memos网页备忘录                      24. pandoranext潘多拉GPT镜像站"
+      echo "23. Memos网页备忘录                      "
       echo "------------------------"
       echo -e "${skyblue} 0. 返回主菜单${re}"
       echo "------------------------"
@@ -2590,9 +2589,7 @@ case $choice in
                   esac
                 fi
             fi
-
-
-              ;;
+            ;;
           4)
 
             docker_name="npm"
@@ -3274,130 +3271,9 @@ case $choice in
               ;;
 
           24)
-
-            docker_name="PandoraNext"
-            docker_img="pengzhile/pandora-next"
-            docker_port=8181
-            docker_rum="docker run -d --restart always --name PandoraNext \
-                            -p 8181:8181 \
-                            -v /home/docker/PandoraNext/data:/data \
-                            -v /home/docker/PandoraNext/sessions:/root/.cache/PandoraNext \
-                            pengzhile/pandora-next"
-            docker_describe="pandora-next一个好用的GPT镜像站服务，国内也可以访问"
-            docker_url="官网介绍: https://github.com/pandora-next/deploy"
-
-
-            if docker inspect "$docker_name" &>/dev/null; then
-                clear
-                echo "$docker_name 已安装，访问地址: "
-                ip_address
-                echo "http:$ipv4_address:$docker_port"
-                echo ""
-                echo "应用操作"
-                echo "------------------------"
-                echo "1. 更新应用             2. 卸载应用"
-                echo "3. 修改config           4. 修改tokens"
-                echo "------------------------"
-                echo "0. 返回上一级选单"
-                echo "------------------------"
-                read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
-
-                case $sub_choice in
-                    1)
-                        clear
-                        docker rm -f "$docker_name"
-                        docker rmi -f "$docker_img"
-                        # 安装 Docker（请确保有 install_docker 函数）
-                        install_docker
-                        $docker_rum
-                        clear
-                        echo "$docker_name 已经安装完成"
-                        echo "------------------------"
-                        # 获取外部 IP 地址
-                        ip_address
-                        echo "您可以使用以下地址访问:"
-                        echo "http:$ipv4_address:$docker_port"
-
-                        ;;
-                    2)
-                        clear
-                        docker rm -f "$docker_name"
-                        docker rmi -f "$docker_img"
-                        rm -rf "/home/docker/$docker_name"
-                        echo "应用已卸载"
-                        ;;
-                    3)
-                        clear
-                        nano /home/docker/PandoraNext/data/config.json
-                        echo "正在重启$docker_name"
-                        docker restart "$docker_name"
-
-                        ;;
-                    4)
-                        clear
-                        nano /home/docker/PandoraNext/data/tokens.json
-                        echo "正在重启$docker_name"
-                        docker restart "$docker_name"
-
-                        ;;
-                    0)
-                        # 跳出循环，退出菜单
-                        ;;
-                    *)
-                        # 跳出循环，退出菜单
-                        ;;
-                esac
-            else
-                clear
-                echo "安装提示"
-                echo "$docker_describe"
-                echo "$docker_url"
-                echo ""
-
-                # 提示用户确认安装
-                read -p "确定安装吗？(Y/N): " choice
-                case "$choice" in
-                    [Yy])
-                        clear
-                        echo "获取license_id请访问: https://dash.pandoranext.com/"
-                        read -p "请输入你的GitHub的license_id: " github1
-
-                        install_docker
-
-                        mkdir -p /home/docker/PandoraNext/{data,sessions}
-                        cd /home/docker/PandoraNext/data
-                        wget https://raw.githubusercontent.com/kejilion/sh/main/PandoraNext/config.json
-                        wget https://raw.githubusercontent.com/kejilion/sh/main/PandoraNext/tokens.json
-                        sed -i "s/github/$github1/g" /home/docker/PandoraNext/data/config.json
-                        webgptpasswd1=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c16)
-                        sed -i "s/webgptpasswd/$webgptpasswd1/g" /home/docker/PandoraNext/data/config.json
-
-                        $docker_rum
-                        clear
-                        echo "$docker_name 已经安装完成"
-                        echo "------------------------"
-                        # 获取外部 IP 地址
-                        ip_address
-                        echo "您可以使用以下地址访问:"
-                        echo "http:$ipv4_address:$docker_port"
-
-                        ;;
-                    [Nn])
-                        # 用户选择不安装
-                        ;;
-                    *)
-                        # 无效输入
-                        ;;
-                esac
-            fi
-
-
-
-
-
-
-              ;;
-
+            clear 
+                echo "${red}项目已失效${re}"
+            ;;
           0)
               main_menu
               ;;
@@ -3417,30 +3293,21 @@ case $choice in
       echo "------------------------"
       echo " 1. 设置脚本启动快捷键"
       echo "------------------------"
-      echo " 2. 修改ROOT密码"
-      echo " 3. 开启ROOT密码登录模式"
-      echo " 4. 禁用修改ROOT密码"
-      echo " 5. 开放所有端口"
-      echo " 6. 修改SSH连接端口"
-      echo " 7. 优化DNS地址"
-      echo -e "${skyblue} 8. 一键重装系统${re}"
-      echo " 9. 禁用ROOT账户创建新账户"
-      echo "10. 切换优先ipv4/ipv6"
-      echo "11. 查看端口占用状态"
-      echo "12. 修改虚拟内存大小"
-      echo "13. 用户管理"
-      echo "14. 用户/密码生成器"
-      echo "15. 系统时区调整"
-      echo "16. 开启BBR3加速"
-      echo "17. 防火墙高级管理器"
-      echo "18. 修改主机名"
+      echo " 2. 修改ROOT密码                   9. 禁用ROOT账户创建新账户"
+      echo " 3. 开启ROOT密码登录              10. 切换优先ipv4/ipv6"
+      echo " 4. 禁用修改ROOT密码              11. 查看端口占用状态"
+      echo " 5. 开放所有端口                  12. 修改虚拟内存大小"
+      echo " 6. 修改SSH连接端口               13. 用户/密码生成器"
+      echo " 7. 优化DNS地址                   14. 用户管理"
+      echo -e "${skyblue} 8. 一键重装系统                  15. NAT小鸡一键重装系统${re} "
+      echo -e "${yellow}--------------------------------------------------------${re}"
+      echo "16. 开启BBR3加速                  23. 系统时区调整"
+      echo "17. 防火墙高级管理器              24. iptables一键转发"
+      echo "18. 修改主机名                    25. NAT批量SSH连接测试"
       echo "19. 切换系统更新源"
       echo "20. 定时任务管理"
       echo "21. ip开放端口扫描"
       echo "22. 服务器资源限制"
-      echo -e "23. ${skyblue}NAT小鸡一键重装系统${re}"
-      echo "24. iptables一键转发"
-      echo "25. NAT批量SSH连接测试"
       echo "------------------------"
       echo "80. 留言板"
       echo "------------------------"
@@ -3470,6 +3337,7 @@ case $choice in
               echo "root:$passwd" | chpasswd && echo "Root密码设置成功" || echo "Root密码修改失败"
               sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config;
               sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g' /etc/ssh/sshd_config;
+              sed -i 's|^Include /etc/ssh/sshd_config.d/\*.conf|#&|' /etc/ssh/sshd_config;
               service sshd restart
               echo -e "${green}ROOT登录设置完毕，重启服务器生效${re}"
               read -p $'\033[1;35m需要立即重启服务器吗？(y/n): \033[0m' choice
@@ -3584,6 +3452,19 @@ case $choice in
 
           8)
             clear
+
+            restart_system() {
+                read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
+                echo -e "${green}重启系统几分钟后即可连接SSH${re}"
+                if [[ $restart_choice =~ ^[Yy]$ ]]; then
+                    reboot
+                else 
+                    echo -e "${green}请手动重启系统继续完成安装${re}"
+                    sleep 2
+                    main_menu
+                fi
+            }
+
             echo -e "${purple}重装系统将无法恢复数据，请提前做好备份${re}"
             echo ""
             read -p $'\033[1;35m确定要重装吗？(y/n): \033[0m' confirm
@@ -3601,169 +3482,135 @@ case $choice in
                     echo -e "${yellow}Windows默认用户名：${purple}Administrator${yellow} 默认密码：${purple}Teddysun.com${yellow} 默认远程连接端口${purple}3389${re}"
                     echo -e "${yellow}详细参数参考Github项目地址：https://github.com/leitbogioro/Tools${re}"
                     echo ""
-                    echo -e "${green}1.安装Debian-12${re}"
-                    echo -e "${green}2.安装Ubuntu-22.04${re}"
-                    echo -e "${green}3.安装Alpine-Linux${re}"
-                    echo -e "${green}4.安装CentOS-9${re}"
-                    echo -e "${green}5.安装Fedora-39${re}"
-                    echo -e "${green}6.安装RockyLinux-9${re}"
-                    echo -e "${green}7.安装AlmaLinux-9${re}"
-                    echo -e "${green}8.安装Kali-Rolling${re}"
-                    echo -e "${green}9.安装Windows-11-Pro${re}"
-                    echo "---------------------"
+                    echo -e "${green} 1.安装Debian-11            2.安装Debian-12${re}"
+                    echo -e "${green} 3.安装Ubuntu-22.04         4.安装Ubuntu-24.04${re}"
+                    echo -e "${green} 5.安装Alpine-3.19          6.安装Alpine-3.20${re}"
+                    echo -e "${green} 7.安装Centos-8             8.安装Centos-9${re}"
+                    echo -e "${green} 9.安装Fedora-39           10.安装RockyLinux-9${re}"
+                    echo -e "${green}11.安装AlmaLinux-9         12.安装Kali-Rolling${re}"
+                    echo -e "${green}13.安装Windows-10          14.安装Windows-11${re}"
+                    echo "-----------------------------------------------"
                     echo -e "${red}0.取消安装${re}"
-                    echo "------------------------"
+                    echo "---------------------"
                     read -p $'\033[1;35m请输入你的选择: \033[0m' sub_choice
                    
                     case $sub_choice in
                         1) 
-                            echo -e "${green}开始为你安装Debian-12${re}"
+                            echo -e "${green}开始为你安装Debian-11${re}"
                             sleep 1
-                            bash InstallNET.sh -debian
+                            bash InstallNET.sh -debian 11
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
                         2) 
-                            echo -e "${green}开始为你安装Ubuntu-22.04${re}"
+                            echo -e "${green}开始为你安装Debian-12${re}"
                             sleep 1
-                            bash InstallNET.sh -ubuntu
+                            bash InstallNET.sh -debian 12
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
                         3) 
-                            echo -e "${green}开始为你安装Alpine-Linux${re}"
+                            echo -e "${green}开始为你安装Ubuntu-22.04${re}"
+                            sleep 1
+                            bash InstallNET.sh -ubuntu 22.04
+                            sleep 2
+                            clear
+                            restart_system
+                            ;;
+                        4) 
+                            echo -e "${green}开始为你安装Ubuntu-24.04${re}"
+                            sleep 1
+                            bash InstallNET.sh -ubuntu 24.04
+                            sleep 2
+                            clear
+                            restart_system
+                            ;;
+                        5) 
+                            echo -e "${green}开始为你安装Alpine-3.19${re}"
+                            sleep 1
+                            bash InstallNET.sh -alpine 3.19
+                            sleep 2
+                            clear
+                            restart_system
+                            ;;
+                        6) 
+                            echo -e "${green}开始为你安装Alpine-3.20${re}"
                             sleep 1
                             bash InstallNET.sh -alpine
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
-                        4) 
-                            echo -e "${green}开始为你安装CentOS-9${re}"
+                        7) 
+                            echo -e "${green}开始为你安装Centos-8${re}"
                             sleep 1
-                            bash InstallNET.sh -centos
+                            bash InstallNET.sh -centos 8
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
-                        5) 
+                        8) 
+                            echo -e "${green}开始为你安装Centos-9${re}"
+                            sleep 1
+                            bash InstallNET.sh -centos 9
+                            sleep 2
+                            clear
+                            restart_system
+                            ;;
+                        9) 
                             echo -e "${green}开始为你安装Fedora-39${re}"
                             sleep 1
                             bash InstallNET.sh -fedora
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
-                        6) 
+                        10) 
                             echo -e "${green}开始为你安装RockyLinux-9${re}"
                             sleep 1
                             bash InstallNET.sh -rockylinux
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
-                        7) 
+                        11) 
                             echo -e "${green}开始为你安装AlmaLinux-9${re}"
                             sleep 1
-                            bash InstallNET.sh -rockylinux
+                            bash InstallNET.sh -almaLinux
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
-                        8) 
+                        12) 
                             echo -e "${green}开始为你安装Kali-Rolling${re}"
                             sleep 1
                             bash InstallNET.sh -kali
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接SSH${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
                             ;;
-                        9) 
-                            echo -e "${green}开始为你安装Windows-11-Pro${re}"
+                        13) 
+                            echo -e "${green}开始为你安装Windows-10${re}"
                             sleep 1
-                            bash InstallNET.sh -windows
+                            bash InstallNET.sh -windows 10 -lang "cn"
                             sleep 2
                             clear
-                            read -p $'\033[1;35m是否立即重启系统继续完成安装？(y/n): \033[0m' restart_choice
-                            echo -e "${green}重启系统几分钟后即可连接远程桌面${re}"
-                            if [[ $restart_choice =~ ^[Yy]$ ]]; then
-                                reboot
-                            else 
-                                echo -e "${green}请手动重启系统继续完成安装${re}"
-                                sleep 2
-                                main_menu
-                            fi
+                            restart_system
+                            ;;
+                        14) 
+                            echo -e "${green}开始为你安装Windows-11${re}"
+                            sleep 1
+                            bash InstallNET.sh -windows 11 -lang "cn"
+                            sleep 2
+                            clear
+                            restart_system
                             ;;
                         0) 
                             echo -e "${red}正在退出安装...${re}"
                             rm InstallNET.sh
-                            sleep 2
+                            sleep 1
                             main_menu
                             ;;
                         *)
@@ -3902,6 +3749,57 @@ case $choice in
             ;;
 
           13)
+            clear
+
+            echo "随机用户名"
+            echo "------------------------"
+            for i in {1..5}; do
+                username="user$(< /dev/urandom tr -dc _a-z0-9 | head -c6)"
+                echo "随机用户名 $i: $username"
+            done
+
+            echo ""
+            echo "随机姓名"
+            echo "------------------------"
+            first_names=("John" "Jane" "Michael" "Emily" "David" "Sophia" "William" "Olivia" "James" "Emma" "Ava" "Liam" "Mia" "Noah" "Isabella")
+            last_names=("Smith" "Johnson" "Brown" "Davis" "Wilson" "Miller" "Jones" "Garcia" "Martinez" "Williams" "Lee" "Gonzalez" "Rodriguez" "Hernandez")
+
+            # 生成5个随机用户姓名
+            for i in {1..5}; do
+                first_name_index=$((RANDOM % ${#first_names[@]}))
+                last_name_index=$((RANDOM % ${#last_names[@]}))
+                user_name="${first_names[$first_name_index]} ${last_names[$last_name_index]}"
+                echo "随机用户姓名 $i: $user_name"
+            done
+
+            echo ""
+            echo "随机UUID"
+            echo "------------------------"
+            for i in {1..5}; do
+                uuid=$(cat /proc/sys/kernel/random/uuid)
+                echo "随机UUID $i: $uuid"
+            done
+
+            echo ""
+            echo "16位随机密码"
+            echo "------------------------"
+            for i in {1..5}; do
+                password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c16)
+                echo "随机密码 $i: $password"
+            done
+
+            echo ""
+            echo "32位随机密码"
+            echo "------------------------"
+            for i in {1..5}; do
+                password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c32)
+                echo "随机密码 $i: $password"
+            done
+            echo ""
+            ;;
+
+          14)
+            clear
               while true; do
                 clear
                 install sudo
@@ -3984,118 +3882,20 @@ case $choice in
               done
               ;;
 
-          14)
-            clear
-
-            echo "随机用户名"
-            echo "------------------------"
-            for i in {1..5}; do
-                username="user$(< /dev/urandom tr -dc _a-z0-9 | head -c6)"
-                echo "随机用户名 $i: $username"
-            done
-
-            echo ""
-            echo "随机姓名"
-            echo "------------------------"
-            first_names=("John" "Jane" "Michael" "Emily" "David" "Sophia" "William" "Olivia" "James" "Emma" "Ava" "Liam" "Mia" "Noah" "Isabella")
-            last_names=("Smith" "Johnson" "Brown" "Davis" "Wilson" "Miller" "Jones" "Garcia" "Martinez" "Williams" "Lee" "Gonzalez" "Rodriguez" "Hernandez")
-
-            # 生成5个随机用户姓名
-            for i in {1..5}; do
-                first_name_index=$((RANDOM % ${#first_names[@]}))
-                last_name_index=$((RANDOM % ${#last_names[@]}))
-                user_name="${first_names[$first_name_index]} ${last_names[$last_name_index]}"
-                echo "随机用户姓名 $i: $user_name"
-            done
-
-            echo ""
-            echo "随机UUID"
-            echo "------------------------"
-            for i in {1..5}; do
-                uuid=$(cat /proc/sys/kernel/random/uuid)
-                echo "随机UUID $i: $uuid"
-            done
-
-            echo ""
-            echo "16位随机密码"
-            echo "------------------------"
-            for i in {1..5}; do
-                password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c16)
-                echo "随机密码 $i: $password"
-            done
-
-            echo ""
-            echo "32位随机密码"
-            echo "------------------------"
-            for i in {1..5}; do
-                password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c32)
-                echo "随机密码 $i: $password"
-            done
-            echo ""
-
-              ;;
-
           15)
-            while true; do
-                clear
-                echo "系统时间信息"
+            clear
+            echo -e "${green}重装系统将无法恢复数据，请提前做好备份${re}"
+            echo ""
+            read -p $'\033[1;35m确定要重装吗？(y/n): \033[0m' confirm
 
-                # 获取当前系统时区
-                current_timezone=$(timedatectl show --property=Timezone --value)
-
-                # 获取当前系统时间
-                current_time=$(date +"%Y-%m-%d %H:%M:%S")
-
-                # 显示时区和时间
-                echo "当前系统时区：$current_timezone"
-                echo "当前系统时间：$current_time"
-
-                echo ""
-                echo "时区切换"
-                echo "亚洲------------------------"
-                echo " 1. 中国上海时间              2. 中国香港时间"
-                echo " 3. 日本东京时间              4. 韩国首尔时间"
-                echo " 5. 新加坡时间                6. 印度加尔各答时间"
-                echo " 7. 阿联酋迪拜时间            8. 澳大利亚悉尼时间"
-                echo "欧洲------------------------"
-                echo "11. 英国伦敦时间             12. 法国巴黎时间"
-                echo "13. 德国柏林时间             14. 俄罗斯莫斯科时间"
-                echo "15. 荷兰尤特赖赫特时间       16. 西班牙马德里时间"
-                echo "美洲------------------------"
-                echo "21. 美国西部时间             22. 美国东部时间"
-                echo "23. 加拿大时间               24. 墨西哥时间"
-                echo "25. 巴西时间                 26. 阿根廷时间"
-                echo "------------------------"
-                echo " 0. 返回上一级选单"
-                echo "------------------------"
-                read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
-
-                case $sub_choice in
-                    1) timedatectl set-timezone Asia/Shanghai ;;
-                    2) timedatectl set-timezone Asia/Hong_Kong ;;
-                    3) timedatectl set-timezone Asia/Tokyo ;;
-                    4) timedatectl set-timezone Asia/Seoul ;;
-                    5) timedatectl set-timezone Asia/Singapore ;;
-                    6) timedatectl set-timezone Asia/Kolkata ;;
-                    7) timedatectl set-timezone Asia/Dubai ;;
-                    8) timedatectl set-timezone Australia/Sydney ;;
-                    11) timedatectl set-timezone Europe/London ;;
-                    12) timedatectl set-timezone Europe/Paris ;;
-                    13) timedatectl set-timezone Europe/Berlin ;;
-                    14) timedatectl set-timezone Europe/Moscow ;;
-                    15) timedatectl set-timezone Europe/Amsterdam ;;
-                    16) timedatectl set-timezone Europe/Madrid ;;
-                    21) timedatectl set-timezone America/Los_Angeles ;;
-                    22) timedatectl set-timezone America/New_York ;;
-                    23) timedatectl set-timezone America/Vareouver ;;
-                    24) timedatectl set-timezone America/Mexico_City ;;
-                    25) timedatectl set-timezone America/Sao_Paulo ;;
-                    26) timedatectl set-timezone America/Argentina/Buenos_Aires ;;
-                    0) break ;; # 跳出循环，退出菜单
-                    *) break ;; # 跳出循环，退出菜单
-                esac
-            done
-              ;;
+                if [[ $confirm =~ ^[Yy]$ ]]; then
+                    sleep 1
+                    curl -so OsMutation.sh https://raw.githubusercontent.com/LloydAsp/OsMutation/main/OsMutation.sh && chmod u+x OsMutation.sh && ./OsMutation.sh
+                    break_end
+                else 
+                    main_menu
+                fi
+            ;;
 
           16)
           if dpkg -l | grep -q 'linux-xanmod'; then
@@ -4406,17 +4206,9 @@ EOF
                         ;;
                 esac
 
-                read -p $'\033[1;35m主机名已更改，是否立即重启系统以使更改生效？ (y/n): \033[0m' restart_choice
-
-                if [[ "$restart_choice" =~ ^[Yy]$ ]]; then
-                    echo -e "${green}正在重启系统...${re}"
-                    sleep 1
-                    reboot
-                else
-                    echo -e "${red}请稍后手动重启系统以使配置生效。${re}"
+                echo -e $'\033[1;35m主机名已更改，重新连接ssh生效\033[0m'
                     sleep 2
                     main_menu
-                fi
             else
                 echo -e "${green}取消更改主机名。${re}"
                 sleep 2
@@ -4552,6 +4344,7 @@ EOF
               echo "------------------------"
               echo "3. 备份当前更新源"
               echo "4. 还原初始更新源"
+              echo -e "${green}5. 软件源切换列表(推荐)${re}"
               echo "------------------------"
               echo "0. 返回上一级"
               echo "------------------------"
@@ -4618,6 +4411,11 @@ EOF
                   4)
                       restore_initial_source
                       ;;
+                  5)
+                      clear
+                      bash <(curl -sSL https://raw.githubusercontent.com/SuperManito/LinuxMirrors/main/ChangeMirrors.sh)
+                      break_end
+                      ;;                     
                   0)
                       break
                       ;;
@@ -4859,18 +4657,76 @@ EOF
             ;;
 
           23)
-            clear
-            echo -e "${green}重装系统将无法恢复数据，请提前做好备份${re}"
-            echo ""
-            read -p $'\033[1;35m确定要重装吗？(y/n): \033[0m' confirm
-
-                if [[ $confirm =~ ^[Yy]$ ]]; then
-                    sleep 1
-                    curl -so OsMutation.sh https://raw.githubusercontent.com/LloydAsp/OsMutation/main/OsMutation.sh && chmod u+x OsMutation.sh && ./OsMutation.sh
-                    break_end
-                else 
-                    main_menu
+            while true; do
+                clear
+                # 获取当前系统时区
+                if [ -f /etc/alpine-release ]; then
+                    if [ ! -f /etc/timezone ]; then
+                        apk add --no-cache tzdata
+                        cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+                        echo "Asia/Shanghai" > /etc/timezone
+                        current_timezone=$(cat /etc/timezone)
+                    else
+                        current_timezone=$(cat /etc/timezone)
+                    fi
+                else
+                    current_timezone=$(timedatectl show --property=Timezone --value)
                 fi
+                clear
+                echo -e "${green}系统时间信息${re}"
+                echo ""
+                # 获取当前系统时间
+                current_time=$(date +"%Y-%m-%d %H:%M:%S")
+
+                # 显示时区和时间
+                echo -e "${purple}当前系统时区：${re}${yellow}${current_timezone}${re}"
+                echo -e "${purple}当前系统时间：${re}${yellow}${current_time}${re}"
+
+                echo ""
+                echo "时区切换"
+                echo "亚洲------------------------"
+                echo " 1. 中国上海时间              2. 中国香港时间"
+                echo " 3. 日本东京时间              4. 韩国首尔时间"
+                echo " 5. 新加坡时间                6. 印度加尔各答时间"
+                echo " 7. 阿联酋迪拜时间            8. 澳大利亚悉尼时间"
+                echo "欧洲------------------------"
+                echo "11. 英国伦敦时间             12. 法国巴黎时间"
+                echo "13. 德国柏林时间             14. 俄罗斯莫斯科时间"
+                echo "15. 荷兰尤特赖赫特时间       16. 西班牙马德里时间"
+                echo "美洲------------------------"
+                echo "21. 美国西部时间             22. 美国东部时间"
+                echo "23. 加拿大时间               24. 墨西哥时间"
+                echo "25. 巴西时间                 26. 阿根廷时间"
+                echo "------------------------"
+                echo " 0. 返回上一级选单"
+                echo "------------------------"
+                read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
+
+                case $sub_choice in
+                    1) timedatectl set-timezone Asia/Shanghai ;;
+                    2) timedatectl set-timezone Asia/Hong_Kong ;;
+                    3) timedatectl set-timezone Asia/Tokyo ;;
+                    4) timedatectl set-timezone Asia/Seoul ;;
+                    5) timedatectl set-timezone Asia/Singapore ;;
+                    6) timedatectl set-timezone Asia/Kolkata ;;
+                    7) timedatectl set-timezone Asia/Dubai ;;
+                    8) timedatectl set-timezone Australia/Sydney ;;
+                    11) timedatectl set-timezone Europe/London ;;
+                    12) timedatectl set-timezone Europe/Paris ;;
+                    13) timedatectl set-timezone Europe/Berlin ;;
+                    14) timedatectl set-timezone Europe/Moscow ;;
+                    15) timedatectl set-timezone Europe/Amsterdam ;;
+                    16) timedatectl set-timezone Europe/Madrid ;;
+                    21) timedatectl set-timezone America/Los_Angeles ;;
+                    22) timedatectl set-timezone America/New_York ;;
+                    23) timedatectl set-timezone America/Vareouver ;;
+                    24) timedatectl set-timezone America/Mexico_City ;;
+                    25) timedatectl set-timezone America/Sao_Paulo ;;
+                    26) timedatectl set-timezone America/Argentina/Buenos_Aires ;;
+                    0) break ;; # 跳出循环，退出菜单
+                    *) break ;; # 跳出循环，退出菜单
+                esac
+            done
             ;;
 
           24)
@@ -5120,16 +4976,17 @@ EOF
       echo -e "${green}       Sing-box多合一             Argo-tunnel${re}"
       echo -e "${green}---------------------------------------------------------${re}"
       echo -e "${white} 1. F佬Sing-box一键脚本        5. F佬ArgoX一键脚本${re}"
-      echo -e "${white} 2. 小绵羊Sing-box三合一       6. Suoha一键Argo脚本${re}"
+      echo -e "${white} 2. 老王Sing-box四合一         6. Suoha一键Argo脚本${re}"
       echo -e "${white} 3. 勇哥Sing-box四合一         7. WL一键Argo哪吒脚本${re}"
-      echo -e "${white} 4. V2ray-agent八合一          8. 一键老王Nodejs-Argo节点+哪吒+订阅"
+      echo -e "${white} 4. V2ray-agent八合一          8. 老王nodejs-argo节点+哪吒+订阅"
       echo -e "${yellow}---------------------------------------------------------${re}"
       echo -e "${yellow}        单协议                    XRAY面板及其他${re}"
       echo -e "${yellow}---------------------------------------------------------${re}"
-      echo -e "${white} 9. M佬Hysteria2一键脚本      13.新版Xray面板一键脚本${re}"
-      echo -e "${white}10. M佬Juicity一键脚本        14.伊朗版Xray面板一键脚本${re}"
-      echo -e "${white}11. M佬Tuic-v5一键脚本        15.OpenVPN一键安装脚本 ${re}"
+      echo -e "${white} 9. 老王Hysteria2一键脚本     13.新版X-UI面板一键脚本${re}"
+      echo -e "${white}10. M佬Juicity一键脚本        14.伊朗版3X-UI面板一键脚本${re}"
+      echo -e "${white}11. 老王Tuic-v5一键脚本       15.OpenVPN一键安装脚本 ${re}"
       echo -e "${white}12. Brutal-Reality一键脚本    16.一键搭建TG代理 ${re}"
+      echo -e "${white}17. 老王Reality一键脚本       18.sing-box面板(sui) ▶${re}"
       echo "---------------------------------------------------------" 
       echo -e "${skyblue} 0. 返回主菜单${re}"
       echo "---------------"
@@ -5140,38 +4997,38 @@ EOF
         1)
         clear
             bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/sing-box/main/sing-box.sh)
-            sleep 2
+            sleep 1
             break_end
         ;;
         2)
         clear
-            bash <(curl -fsSL https://github.com/vveg26/sing-box-reality-hysteria2/raw/main/beta.sh)
-            sleep 2
+            bash <(curl -Ls https://raw.githubusercontent.com/eooce/sing-box/main/sing-box.sh)
+            sleep 1
             break_end
         ;;
         3)
         clear
             bash <(curl -Ls https://gitlab.com/rwkgyg/sing-box-yg/raw/main/sb.sh)
-            sleep 2
+            sleep 1
             break_end
         ;;
         4)
         clear
             install wget
             wget -N --no-check-certificate "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/install.sh" && chmod 777 install.sh && bash install.sh
-            sleep 2
+            sleep 1
             break_end
         ;;
         5)
         clear
             bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/argox/main/argox.sh)
-            sleep 2
+            sleep 1
             break_end
         ;;
         6)
         clear
             curl https://www.baipiao.eu.org/suoha.sh -o suoha.sh && bash suoha.sh
-            sleep 2
+            sleep 1
             break_end            
         ;;            
         7)
@@ -5183,56 +5040,42 @@ EOF
         8)
         clear
             # 检查系统中是否安装screen
-            if command -v screen &>/dev/null; then
-                echo -e "${green}Screen已经安装${re}"
-            else
-                # 如果系统中未安装screen，则根据对应系统安装
-                install screen
-            fi   
+            install screen
 
             # 检查系统中是否存在nodejs
-            install_nodejs       
+            install_nodejs
+            sleep 1
+            clear
             # 提示输入订阅端口
             echo -e "${yellow}注意：NAT小鸡需输入指定端口范围内的端口，否则无法使用订阅功能${re}"
+            
             while true; do
-                read -p $'\033[1;35m请输入节点订阅端口: \033[0m' port
-
-                if [[ $port =~ ^[0-9]+$ ]]; then
-                    # 检查输入是否为正整数
-                    if [ "$port" -gt 0 ] 2>/dev/null; then
-                        # 输入有效，跳出循环
-                        break
+                read -p $'\033[1;35m请输入节点订阅端口[回车将使用随机端口]: \033[0m' port
+                # 如果端口号为空，则生成随机端口号
+                if [[ -z $port ]]; then 
+                    port=$(shuf -i 2000-65000 -n 1)
+                    break
+                else
+                    # 如果端口号不为空，则验证是否为小于65535的正整数
+                    if [[ $port =~ ^[0-9]+$ ]]; then
+                        # 检查输入是否为小于65535的正整数
+                        if [ "$port" -gt 0 ] && [ "$port" -lt 65535 ] 2>/dev/null; then
+                            # 输入有效，跳出循环
+                            break
+                        else
+                            echo -e "${red}端口输入错误，端口应为小于65535的正整数${re}"
+                        fi
                     else
                         echo -e "${red}端口输入错误，端口应为数字且为正整数${re}"
                     fi
-                else
-                    echo -e "${red}端口输入错误，端口应为数字且为正整数${re}"
                 fi
             done
-
+            # 开放订阅端口
             echo -e "${yellow}正在开放端口中...${re}"
-                open_port() {
-                    if command -v iptables &> /dev/null; then
-                        iptables -A INPUT -p tcp --dport $port -j ACCEPT
-                        echo -e "${green}${port}端口已开放${re}"
-                    else
-                        echo "iptables未安装，尝试安装..."
-                        
-                        install iptables
-
-                        if [ $? -eq 0 ]; then
-                            clear
-                            echo -e "${green}iptables安装成功${re}"
-                            iptables -A INPUT -p tcp --dport $port -j ACCEPT
-                            echo -e "${green}${port}端口已开放${re}"
-                        else
-                            echo -e "${red}iptables安装失败，尝试关闭防火墙${re}"
-                            sudo systemctl stop ufw.service && sudo systemctl disable ufw.service && (sudo ufw status | grep -q 'Status: inactive' && echo "防火墙已关闭成功" || echo "防火墙已关闭失败，请手动关闭")
-                        fi
-                    fi
-                }
-                open_port
-
+            install iptables
+            iptables -A INPUT -p tcp --dport $port -j ACCEPT
+            echo -e "${green}${port}端口已开放${re}"
+            clear
             ipv4=$(curl -s ipv4.ip.sb)
 
             echo -e "${green}你的节点订阅链接为：http://$ipv4:$port/sub${re}" 
@@ -5259,21 +5102,98 @@ EOF
             fi
         ;;
         9)
+        while true; do
         clear
-            install wget && wget -N --no-check-certificate https://raw.githubusercontent.com/Misaka-blog/hysteria-install/main/hy2/hysteria.sh && bash hysteria.sh
-            sleep 2
-            break_end
+          echo "--------------"
+          echo -e "${green}1.安装Hysteria2${re}"
+          echo -e "${red}2.卸载Hysteria2${re}"
+          echo -e "${yellow}3.更换Hysteria2端口${re}"          
+          echo "--------------"
+          echo -e "${skyblue}0. 返回上一级菜单${re}"
+          echo "--------------"
+          read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
+            case $sub_choice in
+                1)
+                  clear
+                    read -p $'\033[1;35m请输入Hysteria2节点端口(nat小鸡请输入可用端口范围内的端口),回车跳过则使用随机端口：\033[0m' port
+                    [[ -z $port ]]
+                    until [[ -z $(netstat -tuln | grep -w udp | awk '{print $4}' | sed 's/.*://g' | grep -w "$port") ]]; do
+                        if [[ -n $(netstat -tuln | grep -w udp | awk '{print $4}' | sed 's/.*://g' | grep -w "$port") ]]; then
+                            echo -e "${red}${port}端口已经被其他程序占用，请更换端口重试${re}"
+                            read -p $'\033[1;35m设置Hysteria2端口[1-65535]（回车将使用随机端口）：\033[0m' port
+                            [[ -z $HY2_PORT ]] && port=8880
+                        fi
+                    done
+                    if [ -f "/etc/alpine-release" ]; then
+                        SERVER_PORT=$port bash -c "$(curl -L https://raw.githubusercontent.com/eooce/scripts/master/containers-shell/hy2.sh)"
+                    else
+                        HY2_PORT=$port bash -c "$(curl -L https://raw.githubusercontent.com/eooce/scripts/master/Hysteria2.sh)"
+                    fi
+                    sleep 1
+                    break_end
+
+                    ;;
+                2)
+                    if [ -f "/etc/alpine-release" ]; then
+                        pkill -f '[w]eb'
+                        pkill -f '[n]pm'
+                        cd && rm -rf web npm server.crt server.key config.yaml
+                    else
+                        systemctl stop hysteria-server.service
+                        rm /usr/local/bin/hysteria
+                        rm /etc/systemd/system/hysteria-server.service
+                        rm /etc/hysteria/config.yaml
+                        sudo systemctl daemon-reload
+                        clear
+                    fi
+                    echo -e "${green}Hysteria2已卸载${re}"
+                    break_end
+                    ;;
+                3)
+                    clear
+                        read -p $'\033[1;35m设置Hysteria2端口[1-65535]（回车跳过将使用随机端口）：\033[0m' new_port
+                        [[ -z $new_port ]] && new_port=$(shuf -i 2000-65000 -n 1)
+                        until [[ -z $(netstat -tuln | grep -w udp | awk '{print $4}' | sed 's/.*://g' | grep -w "$new_port") ]]; do
+                            if [[ -n $(netstat -tuln | grep -w udp | awk '{print $4}' | sed 's/.*://g' | grep -w "$new_port") ]]; then
+                                echo -e "${red}${new_port}端口已经被其他程序占用，请更换端口重试${re}"
+                                read -p $'\033[1;35m设置Hysteria2端口[1-65535]（回车跳过将使用随机端口）：\033[0m' new_port
+                                [[ -z $new_port ]] && new_port=$(shuf -i 2000-65000 -n 1)
+                            fi
+                        done
+                        if [ -f "/etc/alpine-release" ]; then
+                            sed -i "s/^listen: :[0-9]*/listen: :$new_port/" /root/config.yaml
+                            pkill -f '[w]eb'
+                            nohup ./web server config.yaml >/dev/null 2>&1 &
+                        else
+                            clear
+                            sed -i "s/^listen: :[0-9]*/listen: :$new_port/" /etc/hysteria/config.yaml
+                            systemctl restart hysteria-server.service
+                        fi
+                        echo -e "${green}Hysteria2端口已更换成$new_port,请手动更改客户端配置!${re}"
+                        sleep 1   
+                        break_end
+                    ;;
+
+                0)
+                    break
+
+                    ;;                   
+                *)
+                    echo -e "${red}无效的输入!${re}"
+                    ;;
+            esac  
+        done
         ;;     
         10)
         clear
             install wget && wget -N https://raw.githubusercontent.com/Misaka-blog/juicity-script/main/juicity.sh && bash juicity.sh
-            sleep 2
+            sleep 1
             break_end
         ;;   
         11)
         clear
-            install wget && wget -N --no-check-certificate https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/tuic.sh && bash tuic.sh
-            sleep 2
+            bash -c "$(curl -L https://raw.githubusercontent.com/eooce/scripts/master/tuic.sh)"
+            sleep 1
             break_end
         ;;      
 
@@ -5295,7 +5215,7 @@ EOF
                 echo -e "${green}当前系统内核版本 $current_kernel_version，符合安装要求${re}"
                 sleep 1
                 bash <(curl -fsSL https://github.com/vveg26/sing-box-reality-hysteria2/raw/main/tcp-brutal-reality.sh)
-                sleep 2
+                sleep 1
                 break_end
             fi
 
@@ -5304,33 +5224,167 @@ EOF
         13)
         clear
             bash <(curl -Ls https://raw.githubusercontent.com/slobys/x-ui/main/install.sh)
-            sleep 2
+            sleep 1
             break_end
         ;; 
         14)
         clear
             bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
-            sleep 2
+            sleep 1
             break_end
         ;;           
         15)
         clear
             install wget && wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh
-            sleep 2
+            sleep 1
             break_end
         ;;   
 
         16)
         clear
-            
-            echo "自動創建TG代理目錄：/home/mtproxy"
-            mkdir /home/mtproxy && cd /home/mtproxy
-
-            curl -s -o mtproxy.sh https://raw.githubusercontent.com/sunpma/mtp/master/mtproxy.sh && chmod +x mtproxy.sh && bash mtproxy.sh
-            sleep 2
+            rm -rf /home/mtproxy && mkdir /home/mtproxy && cd /home/mtproxy
+            curl -fsSL -o mtproxy.sh https://github.com/ellermister/mtproxy/raw/master/mtproxy.sh && chmod +x mtproxy.sh && bash mtproxy.sh
+            sleep 1
             break_end
         ;;
 
+        17)
+        while true; do
+        clear
+          echo "--------------"
+          echo -e "${green}1.安装Reality${re}"
+          echo -e "${red}2.卸载Reality${re}"
+          echo -e "${yellow}3.更换Reality端口${re}"          
+          echo "--------------"
+          echo -e "${skyblue}0. 返回上一级菜单${re}"
+          echo "--------------"
+          read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
+            case $sub_choice in
+                1)
+                  clear
+                    read -p $'\033[1;35m请输入reality节点端口(nat小鸡请输入可用端口范围内的端口),回车跳过则使用随机端口：\033[0m' port
+                    [[ -z $port ]]
+                    until [[ -z $(netstat -tuln | grep -w tcp | awk '{print $4}' | sed 's/.*://g' | grep -w "$port") ]]; do
+                        if [[ -n $(netstat -tuln | grep -w tcp | awk '{print $4}' | sed 's/.*://g' | grep -w "$port") ]]; then
+                            echo -e "${red}${port}端口已经被其他程序占用，请更换端口重试${re}"
+                            read -p $'\033[1;35m设置 reality 端口[1-65535]（回车跳过将使用随机端口）：\033[0m' port
+                            [[ -z $PORT ]] && port=$(shuf -i 2000-65000 -n 1)
+                        fi
+                    done
+                    if [ -f "/etc/alpine-release" ]; then
+                        PORT=$port bash -c "$(curl -L https://raw.githubusercontent.com/eooce/scripts/master/test.sh)"
+                    else
+                        PORT=$port bash -c "$(curl -L https://raw.githubusercontent.com/eooce/xray-reality/master/reality.sh)"
+                    fi
+                    sleep 1
+                    break_end
+                    ;;
+                2)
+                if [ -f "/etc/alpine-release" ]; then
+                    pkill -f '[w]eb'
+                    pkill -f '[n]pm'
+                    cd && rm -rf app
+                    clear
+                else
+                    sudo systemctl stop xray
+                    sudo rm /usr/local/bin/xray
+                    sudo rm /etc/systemd/system/xray.service
+                    sudo rm /usr/local/etc/xray/config.json
+                    sudo rm /usr/local/share/xray/geoip.dat
+                    sudo rm /usr/local/share/xray/geosite.dat
+                    sudo rm /etc/systemd/system/xray@.service
+
+                    # Reload the systemd daemon
+                    sudo systemctl daemon-reload
+
+                    # Remove any leftover Xray files or directories
+                    sudo rm -rf /var/log/xray /var/lib/xray
+                    clear
+                  fi
+
+                    echo -e "\e[1;32mReality已卸载\033[0m"
+                    break_end
+                    ;;
+                3)
+                    clear
+                        read -p $'\033[1;35m设置 reality 端口[1-65535]（回车跳过将使用随机端口）：\033[0m' new_port
+                        [[ -z $new_port ]] && new_port=$(shuf -i 2000-65000 -n 1)
+                        until [[ -z $(netstat -tuln | grep -w tcp | awk '{print $4}' | sed 's/.*://g' | grep -w "$port") ]]; do
+                            if [[ -n $(netstat -tuln | grep -w tcp | awk '{print $4}' | sed 's/.*://g' | grep -w "$port") ]]; then
+                                echo -e "${red}${new_port}端口已经被其他程序占用，请更换端口重试${re}"
+                                read -p $'\033[1;35m设置reality端口[1-65535]（回车跳过将使用随机端口）：\033[0m' new_port
+                                [[ -z $new_port ]] && new_port=$(shuf -i 2000-65000 -n 1)
+                            fi
+                        done
+                        install jq 
+                        if [ -f "/etc/alpine-release" ]; then
+                            jq --argjson new_port "$new_port" '.inbounds[0].port = $new_port' /root/app/config.json > tmp.json && mv tmp.json /root/app/config.json
+                            pkill -f '[w]eb'
+                            cd ~ && cd app
+                            nohup ./web -c config.json >/dev/null 2>&1 &
+                        else
+                            clear
+                            jq --argjson new_port "$new_port" '.inbounds[0].port = $new_port' /usr/local/etc/xray/config.json > tmp.json && mv tmp.json /usr/local/etc/xray/config.json
+                            systemctl restart xray.service
+                        fi
+                        echo -e "${green}Reality端口已更换成$new_port,请手动更改客户端配置!${re}"
+                        sleep 1   
+                        break_end
+                    ;;
+                0)
+                    break
+
+                    ;;
+                *)
+                    echo -e "${red}无效的输入!${re}"
+                    ;;
+            esac  
+        done
+        ;;
+
+        18)
+        while true; do
+        clear
+          echo -e "${skyblue}▶ Sui面板${re}"
+          echo "--------------"
+          echo -e "${green}1.安装sui面板${re}"
+          echo -e "${red}2.卸载sui面板${re}"
+          echo "--------------"
+          echo -e "${skyblue}0. 返回上一级菜单${re}"
+          echo "--------------"
+          read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
+            case $sub_choice in
+                1)
+                    bash <(curl -Ls https://raw.githubusercontent.com/Misaka-blog/s-ui/master/install.sh)
+                    sleep 2
+                    echo ""
+                    break_end
+
+                    ;;
+                2)
+                    systemctl disable sing-box --now
+                    systemctl disable s-ui --now
+
+                    rm -f /etc/systemd/system/s-ui.service
+                    rm -f /etc/systemd/system/sing-box.service
+                    systemctl daemon-reload
+
+                    rm -fr /usr/local/s-ui
+                    clear
+                    echo -e "${green}sui面板已卸载${re}"
+                    break_end
+
+                    ;;
+                0)
+                    break
+
+                    ;;
+                *)
+                    echo -e "${red}无效的输入!${re}"
+                    ;;
+            esac  
+        done
+        ;;
         0)
             main_menu # 返回主菜单
         ;;
@@ -5341,28 +5395,37 @@ EOF
       esac
     done
     ;; 
-
-
+    
   13)
     while true; do
       clear
-      echo "▶ 测试脚本合集"
-      echo "------------------------"
-      echo "1. ChatGPT解锁状态检测"
-      echo "2. Region流媒体解锁测试"
-      echo "3. yeahwu流媒体解锁检测"
-      echo "4. besttrace三网回程延迟路由测试"
-      echo "5. mtr_trace三网回程线路测试"
-      echo "6. Superspeed三网测速"
-      echo "7. yabs性能带宽测试"
-      echo "8. bench性能测试"
-      echo "------------------------"
-      echo -e "9. spiritysdx融合怪测评 \033[33mNEW\033[0m"
-      echo "------------------------"
-      echo -e "${skyblue}0. 返回主菜单${re}"
-      echo "------------------------"
+      echo -e "${purple}▶ 测试脚本合集${re}"
+      echo ""
+      echo -e "${green}----IP及解锁状态检测-------${re}"
+      echo -e "${green} 1. ChatGPT解锁状态检测${re}"
+      echo -e "${green} 2. Region流媒体解锁测试${re}"
+      echo -e "${green} 3. yeahwu流媒体解锁检测${re}"
+      echo -e "${green} 4. xykt_IP质量体检脚本${re}"
+      echo ""
+      echo -e "${skyblue}----网络线路测速-----------${re}"
+      echo -e "${skyblue} 5. Superspeed三网测速${re}"
+      echo -e "${skyblue} 6. nxtrace快速回程测试${re}"
+      echo -e "${skyblue} 7. ludashi2020三网线路测试${re}"
+      echo -e "${skyblue} 8. mtr_trace三网回程线路测试${re}"
+      echo -e "${skyblue} 9. besttrace三网回程延迟路由测试${re}"
+      echo ""
+      echo -e "${green}----硬件性能测试-----------${re}"
+      echo -e "${green}10. yabs性能测试${re}"
+      echo -e "${green}11. icu/gb5 CPU性能测试脚本${re}"
+      echo ""
+      echo -e "${purple}----综合性测试-------------${re}"
+      echo -e "${purple}12. bench性能测试${re}"
+      echo -e "${purple}13. spiritysdx融合怪测评${re}"
+      echo ""
+      echo "---------------------------"
+      echo -e "${skyblue} 0. 返回主菜单${re}"
+      echo "---------------------------"
       read -p $'\033[1;91m请输入你的选择: \033[0m' sub_choice
-
       case $sub_choice in
           1)
               clear
@@ -5379,42 +5442,56 @@ EOF
               ;;
           4)
               clear
-              install wget
-              wget -qO- git.io/besttrace | bash
+              bash <(curl -Ls IP.Check.Place)
               ;;
           5)
               clear
-              curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
+              bash <(curl -Lso- https://git.io/superspeed_uxh)
               ;;
           6)
               clear
-              bash <(curl -Lso- https://git.io/superspeed_uxh)
+              curl nxtrace.org/nt |bash
+              nexttrace --fast-trace --tcp
               ;;
           7)
               clear
-              curl -sL yabs.sh | bash -s -- -i -5
+              curl https://raw.githubusercontent.com/ludashi2020/backtrace/main/install.sh -sSf | sh
               ;;
           8)
               clear
-              curl -Lso- bench.sh | bash
+              curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
               ;;
           9)
+              clear
+              install wget
+              wget -qO- git.io/besttrace | bash
+              ;;
+          10)
+              clear
+              curl -sL yabs.sh | bash -s -- -i -5
+              ;;
+          11)
+              clear
+              bash <(curl -sL bash.icu/gb5)
+              ;;
+          12)
+              clear
+              curl -Lso- bench.sh | bash
+              ;;
+          13)
               clear
               curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh
               ;;
           0)
               main_menu
-
               ;;
           *)
               echo "无效的输入!"
               ;;
       esac
-      break_end
-
+        break_end
     done
     ;;
-
 
   14)
      while true; do
@@ -5833,6 +5910,7 @@ EOF
 
                 else
                     install_nodejs
+                    break_end
                 fi           
                 
             ;;
@@ -6392,6 +6470,7 @@ EOF
                 echo "------------------------"
                 echo -e "${skyblue}7. 新增开设LXC小鸡${re}"
                 echo -e "${red}8. 删除指定LXC小鸡${re}" 
+                echo -e "${red}9. 删除所有LXC小鸡和配置${re}" 
                 echo "------------------------"
                 echo -e "${white}0. 返回上一级菜单${re}"
                 echo "------------------------"
@@ -6493,6 +6572,38 @@ EOF
                         sleep 2
                         break_end
                     ;;
+
+                    9)
+                        clear
+                        read -p $'\033[1;35m删除后无法恢复，确定要继续删除所有Lxc小鸡吗 [y/n]: \033[0m' confirm
+
+                        if [[ "$confirm" =~ ^[Yy]$ ]]; then   
+                            lxc list -c n --format csv | xargs -I {} lxc delete -f {}
+
+                            sudo find /var/log -type f -delete
+                            sudo find /var/tmp -type f -delete
+                            sudo find /tmp -type f -delete
+                            sudo find /var/cache/apt/archives -type f -delete
+
+                            # 删除配置
+                            rm -rf /usr/local/bin/ssh_sh.sh
+                            rm -rf /usr/local/bin/config.sh
+                            rm -rf /usr/local/bin/ssh_bash.sh
+                            rm -rf /usr/local/bin/check-dns.sh
+                            rm -rf /root/ssh_sh.sh
+                            rm -rf /root/config.sh
+                            rm -rf /root/ssh_bash.sh
+                            rm -rf /root/buildone.sh
+                            rm -rf /root/add_more.sh
+                            rm -rf /root/build_ipv6_network.sh
+
+                            echo -e "${green}已删除所有Lxc小鸡${re}"
+                            break_end
+                        else 
+                            echo -e "${green}已取消删除${re}"
+                            break_end
+                        fi    
+                    ;;                    
                     
                     0)
                         break
@@ -6651,7 +6762,7 @@ EOF
                 clear
                 echo -e "${purple}▶ 管理incus小鸡${re}"
                 echo "------------------------"
-                echo -e "${skyblue}1. 查看所有incus小鸡${re}"
+                echo -e "${skyblue}1. 查看所有incus小鸡运行状态${re}"
                 echo "------------------------"
                 echo -e "${skyblue}2. 暂停所有incus小鸡${re}"
                 echo -e "${skyblue}3. 启动所有incus小鸡${re}"
@@ -6661,7 +6772,8 @@ EOF
                 echo -e "${skyblue}6. 给指定小鸡重装系统${re}"
                 echo "------------------------"
                 echo -e "${skyblue}7. 新增开设incus小鸡${re}"
-                echo -e "${red}8. 删除指定incus小鸡${re}" 
+                echo -e "${red}8. 删除指定incus小鸡${re}"
+                echo -e "${red}9. 删除所有incus小鸡和配置${re}" 
                 echo "------------------------"
                 echo -e "${white}0. 返回上一级菜单${re}"
                 echo "------------------------"
@@ -6762,6 +6874,38 @@ EOF
                         break_end
                     ;;
 
+                    9)
+                        clear
+                        read -p $'\033[1;35m删除后无法恢复，确定要继续删除所有incus小鸡吗 [y/n]: \033[0m' confirm
+
+                        if [[ "$confirm" =~ ^[Yy]$ ]]; then   
+                            incus list -c n --format csv | xargs -I {} incus delete -f {}
+
+                            sudo find /var/log -type f -delete
+                            sudo find /var/tmp -type f -delete
+                            sudo find /tmp -type f -delete
+                            sudo find /var/cache/apt/archives -type f -delete
+
+                            # 删除配置
+                            rm -rf /usr/local/bin/ssh_sh.sh
+                            rm -rf /usr/local/bin/config.sh
+                            rm -rf /usr/local/bin/ssh_bash.sh
+                            rm -rf /usr/local/bin/check-dns.sh
+                            rm -rf /root/ssh_sh.sh
+                            rm -rf /root/config.sh
+                            rm -rf /root/ssh_bash.sh
+                            rm -rf /root/buildone.sh
+                            rm -rf /root/add_more.sh
+                            rm -rf /root/build_ipv6_network.sh
+
+                            echo -e "${green}已删除所有incus小鸡${re}"
+                            break_end
+                        else 
+                            echo -e "${green}已取消删除${re}"
+                            break_end
+                        fi 
+                    ;;
+
                     0)
                         break
                     ;;
@@ -6778,7 +6922,7 @@ EOF
         esac
     done
     ;; 
-# 脚本更新
+
   00)
     cd ~
     curl -sS -O https://raw.githubusercontent.com/tcwl/ssh_tool/main/update_log.sh && chmod +x update_log.sh && ./update_log.sh
@@ -6786,7 +6930,7 @@ EOF
     echo ""
     curl -sS -O https://raw.githubusercontent.com/tcwl/ssh_tool/main/ssh_tool.sh && chmod +x ssh_tool.sh
     echo -e "${green}脚本已更新到最新版本！${re}"
-    break_end
+    sleep 1
     main_menu
     ;;
 
